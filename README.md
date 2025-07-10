@@ -18,3 +18,16 @@ RTS1 is a Unity project targeting Unity **2022.3.15f1**. The repository holds th
 
 The actual gameplay scripts describe entities such as buildings and units, handle camera and player input, and include tooling for map generation. These scripts are part of the repository, so you can read and modify them without needing LFS. Git LFS is only required for some of the large binary assets.
 
+
+## Remaining Features Toward a Complete RTS
+
+To evolve this prototype into a full real‑time strategy experience, the following systems are planned:
+
+- **Resource management** – gatherable resources, storage buildings, and spending systems for unit training and construction.
+- **Unit management** – recruiting, grouping and issuing orders to units, including basic formations and command hotkeys.
+- **Map and building management** – construction placement, tech trees, fog of war, and handling multiple players on the same map.
+- **AI opponents** – computer players that can harvest, build, and attack using adjustable difficulty settings.
+- **Movement and pathfinding** – efficient unit pathfinding with obstacle avoidance and support for large groups moving together.
+- **User interface** – in‑game HUD elements like minimaps, selection panels, and production queues.
+
+These features will bring the project closer to a traditional RTS game where players compete to gather resources, build bases and control armies.
