@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.AI;
 
-public class RTSUnit : MonoBehaviour, RTSISelectable
+public class RTSUnit : GameEntity, RTSISelectable
 {
     private Vector3 m_Position;
     private NavMeshAgent navMeshAgent;
@@ -9,7 +9,11 @@ public class RTSUnit : MonoBehaviour, RTSISelectable
     Vector3 RTSISelectable.Position
     {
         get => m_Position;
-        set => m_Position = value;
+        set
+        {
+            m_Position = value;
+            position = value;
+        }
     }
 
     private void Start()
@@ -37,7 +41,14 @@ public class RTSUnit : MonoBehaviour, RTSISelectable
     public void Spawn(Vector3 spawnPosition, float checkRadius)
     {
         m_Position = AdjustPositionIfCollides(spawnPosition, checkRadius);
+        position = m_Position;
         transform.position = m_Position;
+    }
+
+    public void Spawn(Vector3 spawnPosition, float checkRadius, Vector3 rallyPoint)
+    {
+        Spawn(spawnPosition, checkRadius);
+        MoveToPosition(rallyPoint);
     }
 
     private Vector3 AdjustPositionIfCollides(Vector3 position, float radius)
@@ -69,5 +80,10 @@ public class RTSUnit : MonoBehaviour, RTSISelectable
         {
             navMeshAgent.SetDestination(position);
         }
+    }
+
+    public string GetStats()
+    {
+        return $"HP: {health}\nArmor: {armor}";
     }
 }

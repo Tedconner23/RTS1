@@ -39,24 +39,35 @@ public class ToolbarHandler : MonoBehaviour
     {
         if (currentSelection != null)
         {
-            // Show the toolbar and update the UI elements with the selected object's data
             toolbarPanel.SetActive(true);
-
-            // Assuming RTSISelectable has a Name property and a method to get stats
             unitNameText.text = currentSelection.BuildingName;
             unitStatsText.text = currentSelection.GetStats();
 
-            // Enable or update action buttons as needed
             for (int i = 0; i < actionButtons.Length; i++)
             {
-                // Assuming actionButtons correspond to actions the unit can take
-                actionButtons[i].SetActive(true); // Show buttons
-                // Set button text or icon based on the currentSelection's available actions
+                if (currentSelection.unitPrefabs != null && i < currentSelection.unitPrefabs.Length)
+                {
+                    actionButtons[i].SetActive(true);
+                    var txt = actionButtons[i].GetComponentInChildren<TextMeshProUGUI>();
+                    if (txt != null)
+                        txt.text = currentSelection.unitPrefabs[i].name;
+
+                    int index = i;
+                    var btn = actionButtons[i].GetComponent<Button>();
+                    if (btn != null)
+                    {
+                        btn.onClick.RemoveAllListeners();
+                        btn.onClick.AddListener(() => currentSelection.BuildUnit(index));
+                    }
+                }
+                else
+                {
+                    actionButtons[i].SetActive(false);
+                }
             }
         }
         else
         {
-            // Hide the toolbar and disable buttons
             toolbarPanel.SetActive(false);
             foreach (var button in actionButtons)
             {
