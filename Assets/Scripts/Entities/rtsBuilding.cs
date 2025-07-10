@@ -24,6 +24,7 @@ public class RTSBuilding : GameEntity, RTSISelectable
     {
         toolbar = FindObjectOfType<ToolbarHandler>();
         sizeRadius = PlacementHelper.GetBoundingRadius(gameObject);
+        sizeCategory = PlacementHelper.DetermineCategory(sizeRadius);
     }
 
     public string GetStats()

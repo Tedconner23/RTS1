@@ -9,31 +9,82 @@ public enum SizeCategory
 
 public static class PlacementHelper
 {
-    public static float GetSpacing(SizeCategory size)
+    private static readonly float[] MaxSizePerCategory =
     {
-        switch (size)
-        {
-            case SizeCategory.Small: return 0.5f;
-            case SizeCategory.Medium: return 1f;
-            case SizeCategory.Large: return 2f;
-            default: return 0.5f;
-        }
+        1.5f, // Small
+        3f,   // Medium
+        6f    // Large
+    };
+
+    public static float GetMaxRadius(SizeCategory size)
+    {
+        int i = (int)size;
+        if (i < 0 || i >= MaxSizePerCategory.Length)
+            return 1.5f;
+        return MaxSizePerCategory[i];
+    }
+
+    public static float GetSpacing(SizeCategory size, float currentRadius)
+    {
+        float target = GetMaxRadius(size);
+        float spacing = target - currentRadius;
+        return Mathf.Max(0f, spacing);
+    }
+
+    public static SizeCategory DetermineCategory(float radius)
+    {
+        if (radius <= GetMaxRadius(SizeCategory.Small))
+            return SizeCategory.Small;
+        if (radius <= GetMaxRadius(SizeCategory.Medium))
+            return SizeCategory.Medium;
+        return SizeCategory.Large;
     }
 
     public static float GetBoundingRadius(GameObject obj)
     {
+        Bounds bounds = new Bounds(obj.transform.position, Vector3.zero);
+        bool hasBounds = false;
+
         Collider[] colliders = obj.GetComponentsInChildren<Collider>();
-        if (colliders.Length == 0)
-            return 0.5f;
-        Bounds b = colliders[0].bounds;
         foreach (var c in colliders)
-            b.Encapsulate(c.bounds);
-        return Mathf.Max(b.extents.x, Mathf.Max(b.extents.y, b.extents.z));
+        {
+            if (!hasBounds)
+            {
+                bounds = c.bounds;
+                hasBounds = true;
+            }
+            else
+            {
+                bounds.Encapsulate(c.bounds);
+            }
+        }
+
+        if (!hasBounds)
+        {
+            Renderer[] renderers = obj.GetComponentsInChildren<Renderer>();
+            foreach (var r in renderers)
+            {
+                if (!hasBounds)
+                {
+                    bounds = r.bounds;
+                    hasBounds = true;
+                }
+                else
+                {
+                    bounds.Encapsulate(r.bounds);
+                }
+            }
+        }
+
+        if (!hasBounds)
+            return 0.5f;
+
+        return Mathf.Max(bounds.extents.x, Mathf.Max(bounds.extents.y, bounds.extents.z));
     }
 
     public static bool CanPlace(GameEntity entity, Vector3 position)
     {
-        float radius = entity.sizeRadius + GetSpacing(entity.sizeCategory);
+        float radius = GetMaxRadius(entity.sizeCategory);
         Collider[] hits = Physics.OverlapSphere(position, radius, ~0, QueryTriggerInteraction.Ignore);
         foreach (var hit in hits)
         {

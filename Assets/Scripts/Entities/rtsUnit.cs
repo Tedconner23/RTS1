@@ -28,6 +28,7 @@ public class RTSUnit : GameEntity, RTSISelectable
 
         // Calculate size based on attached colliders
         sizeRadius = PlacementHelper.GetBoundingRadius(gameObject);
+        sizeCategory = PlacementHelper.DetermineCategory(sizeRadius);
 
         tracker = GetComponent<GameEntityTrackerItem>();
         if (tracker == null)
@@ -54,7 +55,7 @@ public class RTSUnit : GameEntity, RTSISelectable
 
     public void Spawn(Vector3 spawnPosition, float checkRadius)
     {
-        float radius = sizeRadius + PlacementHelper.GetSpacing(sizeCategory);
+        float radius = PlacementHelper.GetMaxRadius(sizeCategory);
         if (checkRadius > radius)
             radius = checkRadius;
 
