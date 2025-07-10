@@ -9,13 +9,39 @@ public class ToolbarHandler : MonoBehaviour
     public GameObject toolbarPanel;
     public TextMeshProUGUI unitNameText;
     public TextMeshProUGUI unitStatsText;
-    public GameObject[] actionButtons;
+
+    // Prefab used for dynamically creating buttons in the toolbar
+    public GameObject buttonPrefab;
+
+    // Parent transform for the generated buttons.  If left null the toolbar
+    // panel transform will be used.
+    public Transform buttonParent;
+
+    // Additional spacing between buttons when laying them out horizontally.
+    public float buttonSpacing = 10f;
+
+    // Cached data from the button prefab for layout calculations
+    private Vector2 prefabStartPos;
+    private Vector2 prefabSize;
 
     private RTSBuilding currentSelection;
 
+    private Spawner spawner;
+    private readonly List<GameObject> spawnedButtons = new List<GameObject>();
+
     void Start()
     {
-        toolbarPanel.SetActive(false); // Hide the toolbar at start
+        spawner = FindObjectOfType<Spawner>();
+        if (buttonPrefab != null)
+        {
+            var rect = buttonPrefab.GetComponent<RectTransform>();
+            if (rect != null)
+            {
+                prefabStartPos = rect.anchoredPosition;
+                prefabSize = rect.sizeDelta;
+            }
+        }
+        UpdateToolbar();
     }
 
     void Update()
@@ -37,42 +63,84 @@ public class ToolbarHandler : MonoBehaviour
 
     private void UpdateToolbar()
     {
+        // Remove any existing dynamic buttons
+        foreach (var button in spawnedButtons)
+        {
+            if (button != null)
+                Destroy(button);
+        }
+        spawnedButtons.Clear();
+
+        Transform parent = buttonParent != null ? buttonParent : toolbarPanel.transform;
+
         if (currentSelection != null)
         {
+            // Display information about the selected building
             toolbarPanel.SetActive(true);
             unitNameText.text = currentSelection.BuildingName;
             unitStatsText.text = currentSelection.GetStats();
 
-            for (int i = 0; i < actionButtons.Length; i++)
+            if (currentSelection.unitPrefabs != null)
             {
-                if (currentSelection.unitPrefabs != null && i < currentSelection.unitPrefabs.Length)
+                for (int i = 0; i < currentSelection.unitPrefabs.Length; i++)
                 {
-                    actionButtons[i].SetActive(true);
-                    var txt = actionButtons[i].GetComponentInChildren<TextMeshProUGUI>();
+                    int idx = i;
+                    GameObject buttonObj = Instantiate(buttonPrefab, parent);
+                    PositionButton(buttonObj.GetComponent<RectTransform>(), idx);
+
+                    var txt = buttonObj.GetComponentInChildren<TextMeshProUGUI>();
                     if (txt != null)
                         txt.text = currentSelection.unitPrefabs[i].name;
 
-                    int index = i;
-                    var btn = actionButtons[i].GetComponent<Button>();
+                    var btn = buttonObj.GetComponent<Button>();
                     if (btn != null)
                     {
                         btn.onClick.RemoveAllListeners();
-                        btn.onClick.AddListener(() => currentSelection.BuildUnit(index));
+                        btn.onClick.AddListener(() => currentSelection.BuildUnit(idx));
                     }
-                }
-                else
-                {
-                    actionButtons[i].SetActive(false);
+
+                    spawnedButtons.Add(buttonObj);
                 }
             }
         }
         else
         {
-            toolbarPanel.SetActive(false);
-            foreach (var button in actionButtons)
+            // Nothing selected: show building spawn buttons
+            toolbarPanel.SetActive(true);
+            unitNameText.text = string.Empty;
+            unitStatsText.text = string.Empty;
+
+            if (spawner != null)
             {
-                button.SetActive(false);
+                for (int i = 0; i < spawner.buildingPrefabs.Count; i++)
+                {
+                    int idx = i;
+                    GameObject buttonObj = Instantiate(buttonPrefab, parent);
+                    PositionButton(buttonObj.GetComponent<RectTransform>(), idx);
+
+                    var txt = buttonObj.GetComponentInChildren<TextMeshProUGUI>();
+                    if (txt != null)
+                        txt.text = spawner.buildingPrefabs[i].name;
+
+                    var btn = buttonObj.GetComponent<Button>();
+                    if (btn != null)
+                    {
+                        btn.onClick.RemoveAllListeners();
+                        btn.onClick.AddListener(() => spawner.SpawnBuilding(idx));
+                    }
+
+                    spawnedButtons.Add(buttonObj);
+                }
             }
         }
+    }
+
+    private void PositionButton(RectTransform rect, int index)
+    {
+        if (rect == null)
+            return;
+
+        rect.sizeDelta = prefabSize;
+        rect.anchoredPosition = prefabStartPos + new Vector2(index * (prefabSize.x + buttonSpacing), 0f);
     }
 }
