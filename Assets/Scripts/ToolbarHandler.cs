@@ -21,10 +21,28 @@ public class ToolbarHandler : MonoBehaviour
     // used instead of this value.
     public float buttonSpacing = 100f;
 
+    private Vector2 prefabStartPos;
+    private Vector2 prefabSize;
+
     private RTSBuilding currentSelection;
 
     private Spawner spawner;
     private readonly List<GameObject> spawnedButtons = new List<GameObject>();
+
+    void Awake()
+    {
+        if (buttonPrefab != null)
+        {
+            var rect = buttonPrefab.GetComponent<RectTransform>();
+            if (rect != null)
+            {
+                prefabStartPos = rect.anchoredPosition;
+                prefabSize = rect.sizeDelta;
+                if (buttonSpacing <= 0f)
+                    buttonSpacing = prefabSize.x * 0.1f;
+            }
+        }
+    }
 
     void Start()
     {
@@ -83,7 +101,9 @@ public class ToolbarHandler : MonoBehaviour
                     var btn = buttonObj.GetComponent<Button>();
                     if (btn != null)
                     {
-                        btn.onClick.AddListener(() => currentSelection.BuildUnit(idx));
+                        btn.onClick.RemoveAllListeners();
+                        int captured = idx;
+                        btn.onClick.AddListener(() => currentSelection.BuildUnit(captured));
                     }
 
                     spawnedButtons.Add(buttonObj);
@@ -112,7 +132,9 @@ public class ToolbarHandler : MonoBehaviour
                     var btn = buttonObj.GetComponent<Button>();
                     if (btn != null)
                     {
-                        btn.onClick.AddListener(() => spawner.SpawnBuilding(idx));
+                        btn.onClick.RemoveAllListeners();
+                        int captured = idx;
+                        btn.onClick.AddListener(() => spawner.SpawnBuilding(captured));
                     }
 
                     spawnedButtons.Add(buttonObj);
@@ -126,6 +148,8 @@ public class ToolbarHandler : MonoBehaviour
         if (rect == null)
             return;
 
-        rect.anchoredPosition = new Vector2(index * buttonSpacing, rect.anchoredPosition.y);
+        rect.sizeDelta = prefabSize;
+        float step = prefabSize.x + buttonSpacing;
+        rect.anchoredPosition = new Vector2(prefabStartPos.x + index * step, prefabStartPos.y);
     }
 }
