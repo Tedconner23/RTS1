@@ -1,3 +1,32 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:d13f6860dfd3143537c4227f68b17a4d0047c1433eb940eb4da6fb09964b2f77
-size 703
+using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
+
+public class MenuScript : MonoBehaviour
+{
+    // Game variables
+    public static int playerScore = 0;
+    public static int playerLives = 3;
+
+    // Reference to the start button
+    public Button startButton;
+
+    void Start()
+    {
+        // Initialize game variables
+        playerScore = 0;
+        playerLives = 3;
+
+        // Add listener to the start button
+        if (startButton != null)
+        {
+            startButton.onClick.AddListener(StartGame);
+        }
+    }
+
+    void StartGame()
+    {
+        // Load the game scene
+        SceneManager.LoadScene("GameScene");
+    }
+}

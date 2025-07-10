@@ -1,3 +1,16 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:62a2314c2428bd0c6cfaec50a701d0020cb67d4d901169dd0eceddc830ec7560
-size 291
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public enum BuildingType
+{
+        HQ,
+        BARRACKS,
+        FARM,
+        WALL,
+        TOWER,
+        TECHNOLOGY,
+        LUMBERCOLLECTION,
+        GOLDCOLLECTION,
+        GEMCOLLECTION,
+}
