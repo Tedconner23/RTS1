@@ -1,18 +1,3 @@
-using AmplifyShaderEditor;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
-public class Spawner : MonoBehaviour
-{
-    public GameObject HQPrefab;
-    public GameObject PlayerObjects;
-    public void SpawnHQ()
-    {
-        var spawn  = Instantiate(HQPrefab);
-        spawn.transform.localScale = Vector3.one;
-        spawn.transform.localPosition = Vector3.one;
-        spawn.transform.position = Vector3.one;
-        spawn.GetComponent<RTSBuilding>().PrebuildHighlight();
-    }
-}
+version https://git-lfs.github.com/spec/v1
+oid sha256:d3219aedc3da9536a496348b2f47f73ee8f08a200e31366da08493513e8ae73b
+size 531

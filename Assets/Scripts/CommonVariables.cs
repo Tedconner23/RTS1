@@ -1,10 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
-public static class CommonVariables 
-{
-    public static Vector3 ScrollRate = new Vector3(2f, 2f, 30f);
-    public static int PlayerCount = 2;
-    public static GameEntityTrackerItem GameEntities;
-}
+version https://git-lfs.github.com/spec/v1
+oid sha256:38298808ee553d9d913c51e4b16a367de8865a61e9e8b7f4431f694f51b15ed4
+size 289
