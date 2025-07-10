@@ -17,9 +17,12 @@ public class ToolbarHandler : MonoBehaviour
     // panel transform will be used.
     public Transform buttonParent;
 
-    // Spacing between the created buttons.  Layout groups in the UI can also be
-    // used instead of this value.
-    public float buttonSpacing = 100f;
+    // Additional spacing between buttons when laying them out horizontally.
+    public float buttonSpacing = 10f;
+
+    // Cached data from the button prefab for layout calculations
+    private Vector2 prefabStartPos;
+    private Vector2 prefabSize;
 
     private RTSBuilding currentSelection;
 
@@ -29,6 +32,15 @@ public class ToolbarHandler : MonoBehaviour
     void Start()
     {
         spawner = FindObjectOfType<Spawner>();
+        if (buttonPrefab != null)
+        {
+            var rect = buttonPrefab.GetComponent<RectTransform>();
+            if (rect != null)
+            {
+                prefabStartPos = rect.anchoredPosition;
+                prefabSize = rect.sizeDelta;
+            }
+        }
         UpdateToolbar();
     }
 
@@ -83,6 +95,7 @@ public class ToolbarHandler : MonoBehaviour
                     var btn = buttonObj.GetComponent<Button>();
                     if (btn != null)
                     {
+                        btn.onClick.RemoveAllListeners();
                         btn.onClick.AddListener(() => currentSelection.BuildUnit(idx));
                     }
 
@@ -112,6 +125,7 @@ public class ToolbarHandler : MonoBehaviour
                     var btn = buttonObj.GetComponent<Button>();
                     if (btn != null)
                     {
+                        btn.onClick.RemoveAllListeners();
                         btn.onClick.AddListener(() => spawner.SpawnBuilding(idx));
                     }
 
@@ -126,6 +140,7 @@ public class ToolbarHandler : MonoBehaviour
         if (rect == null)
             return;
 
-        rect.anchoredPosition = new Vector2(index * buttonSpacing, rect.anchoredPosition.y);
+        rect.sizeDelta = prefabSize;
+        rect.anchoredPosition = prefabStartPos + new Vector2(index * (prefabSize.x + buttonSpacing), 0f);
     }
 }
