@@ -29,6 +29,10 @@ public class GameEntity : MonoBehaviour
     public bool isResource;
     public GameResource resourceType;
     public float resourceAmount;
+
+    // Size settings for placement and collision
+    public SizeCategory sizeCategory = SizeCategory.Small;
+    public float sizeRadius;
 }
 public enum GameResource
 {

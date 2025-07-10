@@ -26,6 +26,9 @@ public class RTSUnit : GameEntity, RTSISelectable
             Debug.LogError("NavMeshAgent component not found on RTSUnit.");
         }
 
+        // Calculate size based on attached colliders
+        sizeRadius = PlacementHelper.GetBoundingRadius(gameObject);
+
         tracker = GetComponent<GameEntityTrackerItem>();
         if (tracker == null)
             tracker = gameObject.AddComponent<GameEntityTrackerItem>();
@@ -51,7 +54,11 @@ public class RTSUnit : GameEntity, RTSISelectable
 
     public void Spawn(Vector3 spawnPosition, float checkRadius)
     {
-        m_Position = AdjustPositionIfCollides(spawnPosition, checkRadius);
+        float radius = sizeRadius + PlacementHelper.GetSpacing(sizeCategory);
+        if (checkRadius > radius)
+            radius = checkRadius;
+
+        m_Position = AdjustPositionIfCollides(spawnPosition, radius);
         position = m_Position;
         transform.position = m_Position;
     }
@@ -64,11 +71,17 @@ public class RTSUnit : GameEntity, RTSISelectable
 
     private Vector3 AdjustPositionIfCollides(Vector3 position, float radius)
     {
-        Collider[] colliders = Physics.OverlapSphere(position, radius);
-        while (colliders.Length > 0)
+        Collider[] colliders = Physics.OverlapSphere(position, radius, ~0, QueryTriggerInteraction.Ignore);
+        int tries = 0;
+        while (colliders.Length > 0 && tries < 10)
         {
-            position += new Vector3(radius * 2, 0, 0); // Adjust position by moving to the side
-            colliders = Physics.OverlapSphere(position, radius);
+            position += new Vector3(radius * 2, 0, 0);
+            colliders = Physics.OverlapSphere(position, radius, ~0, QueryTriggerInteraction.Ignore);
+            tries++;
+        }
+        if (tries >= 10)
+        {
+            Debug.LogWarning("Unable to find free space to spawn unit.");
         }
         return position;
     }

@@ -23,6 +23,7 @@ public class RTSBuilding : GameEntity, RTSISelectable
     private void Awake()
     {
         toolbar = FindObjectOfType<ToolbarHandler>();
+        sizeRadius = PlacementHelper.GetBoundingRadius(gameObject);
     }
 
     public string GetStats()
@@ -58,13 +59,20 @@ public class RTSBuilding : GameEntity, RTSISelectable
             }
             if (Input.GetMouseButtonDown(0)) // Left-click to place
             {
-                BuildOverlayObject.SetActive(false);
-                ActivateObject.SetActive(false);
-                BuildObject.SetActive(true);
-                DeactiveObject.SetActive(false);
-                SelectRing.SetActive(false);
-                StartCoroutine(BuildProgressCoroutine());
-                yield break;
+                if (PlacementHelper.CanPlace(this, transform.position))
+                {
+                    BuildOverlayObject.SetActive(false);
+                    ActivateObject.SetActive(false);
+                    BuildObject.SetActive(true);
+                    DeactiveObject.SetActive(false);
+                    SelectRing.SetActive(false);
+                    StartCoroutine(BuildProgressCoroutine());
+                    yield break;
+                }
+                else
+                {
+                    Debug.Log("Invalid placement location.");
+                }
             }
             else if (Input.GetMouseButtonDown(1) || Input.GetKeyDown(KeyCode.Escape)) // Right-click or Esc to cancel
             {
@@ -111,7 +119,15 @@ public class RTSBuilding : GameEntity, RTSISelectable
         RTSUnit unit = unitObj.GetComponent<RTSUnit>();
         if (unit != null)
         {
-            unit.Spawn(spawnPos, 1f, rally);
+            if (PlacementHelper.CanPlace(unit, spawnPos))
+            {
+                unit.Spawn(spawnPos, 1f, rally);
+            }
+            else
+            {
+                Debug.Log("Unit spawn location blocked.");
+                Destroy(unitObj);
+            }
         }
         else
         {
