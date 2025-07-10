@@ -19,28 +19,50 @@ RTS1 is a Unity project targeting Unity **2022.3.15f1**. The repository holds th
 The actual gameplay scripts describe entities such as buildings and units, handle camera and player input, and include tooling for map generation. These scripts are part of the repository, so you can read and modify them without needing LFS. Git LFS is only required for some of the large binary assets.
 
 
+## Recent Updates
+
+- Map generation uses `SimpleMapGenerator` to produce height maps and clustered resources through `ResourceSpawner`.
+- A `FogOfWar` manager tracks player visibility while `FogOfWarRevealer` attached to units uncovers the map.
+- `MapInitScript` now accepts multiple start locations and spawns initial objects via `PlayerSpawner`.
+- Units automatically register with the fog system on spawn.
+- `DayNightCycle` slowly rotates the directional light to simulate the passage of time.
+
+## Scene Setup
+
+Attach these scripts to GameObjects in your scene:
+
+- **MapInitScript** – place on an empty manager object.  Assign the terrain parent, 
+  array of player start positions, and references to `ResourceSpawner`, `PlayerSpawner`
+  and `SimpleMapGenerator`.
+- **SimpleMapGenerator** – attach to the `Terrain` GameObject. It will sculpt the
+  terrain and can call `ResourceSpawner` for clustered resource placement.
+- **ResourceSpawner** – use on an empty child under the map manager. Provide resource
+  prefabs and map size. `MapInitScript` or `SimpleMapGenerator` invokes its
+  `SpawnResources` method.
+- **PlayerSpawner** – another component on the map manager.  Configure starting
+  unit and building prefabs so `MapInitScript` can spawn them.
+- **FogOfWar** – a single global object that manages visibility. The `FogOfWar`
+  instance must exist before units spawn.
+- **FogOfWarRevealer** – add to unit prefabs that should reveal the map. The
+  `RTSUnit` script automatically ensures one is present.
+- **DayNightCycle** – attach to an empty GameObject or the directional light
+  itself and assign the light reference.
+
 ## Development Roadmap
 
 The current scripts (`ToolbarHandler`, `rtsUnit`, `rtsBuilding`, `SelectionManager` and others) cover basic camera controls, object selection and simple building/unit spawning. To reach feature parity with games such as **Warcraft 3**, the following tasks are planned.  Each item suggests new classes or functions and how they should work together:
 
 ### Map and World
 
-- Expand the map generator for varied terrain and resource placement.
-  - Extend `MapGenScript` to generate height maps and random resource areas.
-  - Create a **`ResourceSpawner`** that places `ResourceNode` objects at map initialisation.
-- Add a fog‑of‑war system using `GameEntityTrackerItem` visibility data.
-  - Implement a **`FogOfWar`** manager maintaining a visibility grid for each player.
-  - Units register their `GameEntityTrackerItem` so the fog can be revealed as they explore.
-- Support multiple player start locations from `MapInitScript`.
-  - Add a **`PlayerSpawner`** that creates initial buildings and units at each start position.
-- Optional environmental effects such as day/night cycles.
-  - A simple **`DayNightCycle`** script can rotate the directional light over time.
+- `SimpleMapGenerator` builds height maps and uses `ResourceSpawner` to place clustered resources.
+- `FogOfWar` manages visibility per player and `FogOfWarRevealer` lets units uncover territory.
+- `MapInitScript` and `PlayerSpawner` support multiple starting locations with initial units and buildings.
+- `DayNightCycle` rotates the directional light over time.
+- **Planned:** render the fog visually and add more varied terrain types.
 ### Resources
 
-- Implement gatherable nodes for `Gold`, `Lumber` and `Steel` using the existing `GameResource` enum.
-  - **`ResourceNode`** component holding the resource type and remaining amount.
-  - Provide `float Harvest(float amount)` to remove resources and return the collected value.
-  - Should notify a new **`ResourceManager`** script that tracks totals per player.
+- Gatherable nodes for `Gold`, `Lumber` and `Steel` are handled by the `ResourceNode` component with a `Harvest` method.
+- **Planned:** create a `ResourceManager` script that tracks totals per player and processes deposits.
 - Create worker AI to harvest resources and deliver them to storage buildings.
   - Add a **`WorkerAI`** behaviour to units with `BeginHarvest(ResourceNode node)` and `DepositResources(ResourceStorage storage)` functions.
   - Uses `NavMeshAgent` from `RTSUnit` for movement and updates `ResourceManager` when depositing.
