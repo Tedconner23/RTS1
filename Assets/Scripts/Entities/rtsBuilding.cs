@@ -25,6 +25,8 @@ public class RTSBuilding : GameEntity, RTSISelectable
         toolbar = FindObjectOfType<ToolbarHandler>();
         sizeRadius = PlacementHelper.GetBoundingRadius(gameObject);
         sizeCategory = PlacementHelper.DetermineCategory(sizeRadius);
+        placementRadius = PlacementHelper.GetMaxRadius(sizeCategory);
+        PlacementHelper.EnsureCollider(gameObject, placementRadius);
     }
 
     public string GetStats()
@@ -122,7 +124,7 @@ public class RTSBuilding : GameEntity, RTSISelectable
         {
             if (PlacementHelper.CanPlace(unit, spawnPos))
             {
-                unit.Spawn(spawnPos, 1f, rally);
+                unit.Spawn(spawnPos, unit.placementRadius, rally);
             }
             else
             {

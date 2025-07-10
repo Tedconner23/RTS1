@@ -84,7 +84,7 @@ public static class PlacementHelper
 
     public static bool CanPlace(GameEntity entity, Vector3 position)
     {
-        float radius = GetMaxRadius(entity.sizeCategory);
+        float radius = entity.placementRadius > 0f ? entity.placementRadius : GetMaxRadius(entity.sizeCategory);
         Collider[] hits = Physics.OverlapSphere(position, radius, ~0, QueryTriggerInteraction.Ignore);
         foreach (var hit in hits)
         {
@@ -92,5 +92,17 @@ public static class PlacementHelper
                 return false;
         }
         return true;
+    }
+
+    public static void EnsureCollider(GameObject obj, float radius)
+    {
+        var sphere = obj.GetComponent<SphereCollider>();
+        if (sphere == null)
+        {
+            sphere = obj.AddComponent<SphereCollider>();
+            sphere.center = Vector3.zero;
+        }
+        sphere.radius = radius;
+        sphere.isTrigger = false;
     }
 }

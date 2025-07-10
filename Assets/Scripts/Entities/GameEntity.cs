@@ -33,6 +33,7 @@ public class GameEntity : MonoBehaviour
     // Size settings for placement and collision
     public SizeCategory sizeCategory = SizeCategory.Small;
     public float sizeRadius;
+    public float placementRadius;
 }
 public enum GameResource
 {
