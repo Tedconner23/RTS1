@@ -23,6 +23,18 @@ The actual gameplay scripts describe entities such as buildings and units, handl
 
 The current scripts (`ToolbarHandler`, `rtsUnit`, `rtsBuilding`, `SelectionManager` and others) cover basic camera controls, object selection and simple building/unit spawning. To reach feature parity with games such as **Warcraft 3**, the following tasks are planned.  Each item suggests new classes or functions and how they should work together:
 
+### Map and World
+
+- Expand the map generator for varied terrain and resource placement.
+  - Extend `MapGenScript` to generate height maps and random resource areas.
+  - Create a **`ResourceSpawner`** that places `ResourceNode` objects at map initialisation.
+- Add a fog‑of‑war system using `GameEntityTrackerItem` visibility data.
+  - Implement a **`FogOfWar`** manager maintaining a visibility grid for each player.
+  - Units register their `GameEntityTrackerItem` so the fog can be revealed as they explore.
+- Support multiple player start locations from `MapInitScript`.
+  - Add a **`PlayerSpawner`** that creates initial buildings and units at each start position.
+- Optional environmental effects such as day/night cycles.
+  - A simple **`DayNightCycle`** script can rotate the directional light over time.
 ### Resources
 
 - Implement gatherable nodes for `Gold`, `Lumber` and `Steel` using the existing `GameResource` enum.
@@ -39,6 +51,20 @@ The current scripts (`ToolbarHandler`, `rtsUnit`, `rtsBuilding`, `SelectionManag
   - Expose events such as `OnResourceChanged` from `PlayerStats` or `ResourceManager`.
   - Implement a **`ResourceUI`** script to update the HUD whenever these events fire.
 
+### Buildings and Tech
+
+- Validate placement using build overlays and collision checks.
+  - Create a **`BuildingPlacer`** manager responsible for preview models and validating positions using physics or the NavMesh.
+  - `Spawner` should call `BuildingPlacer.PlaceBuilding` when the player chooses a structure.
+- Show construction progress visuals and handle building upgrades.
+  - Add a **`ConstructionSite`** component to `RTSBuilding` which runs a progress coroutine and fires events for the UI.
+  - Implement `UpgradeTo(RTSBuilding nextTier)` to swap models and stats when upgrades finish.
+- Implement a tech tree for unlocking new units, upgrades and building tiers.
+  - Introduce a **`TechTree`** class with `IsUnlocked(string id)` and `Unlock(string id)` methods.
+  - `ToolbarHandler` and `Spawner` query `TechTree` to enable or disable buttons.
+- Provide rally points and production queues through `ToolbarHandler`.
+  - Extend buildings with a **`RallyPoint`** property and a `SetRallyPoint(Vector3 position)` function used by `rtsUnit.Spawn`.
+  - Production queues rely on the `ProductionQueue` class from the units section.
 ### Units
 
 - Expand `RTSUnit` with combat, health and death handling.
@@ -54,44 +80,6 @@ The current scripts (`ToolbarHandler`, `rtsUnit`, `rtsBuilding`, `SelectionManag
 - Introduce hero units that gain levels and abilities similar to Warcraft 3 heroes.
   - Derive **`HeroUnit`** from `RTSUnit` with `level`, `experience` and a list of `HeroAbility` objects.
   - Provide `GainExperience(int amount)` and `CastAbility(int slot)` functions.
-
-### Buildings and Tech
-
-- Validate placement using build overlays and collision checks.
-  - Create a **`BuildingPlacer`** manager responsible for preview models and validating positions using physics or the NavMesh.
-  - `Spawner` should call `BuildingPlacer.PlaceBuilding` when the player chooses a structure.
-- Show construction progress visuals and handle building upgrades.
-  - Add a **`ConstructionSite`** component to `RTSBuilding` which runs a progress coroutine and fires events for the UI.
-  - Implement `UpgradeTo(RTSBuilding nextTier)` to swap models and stats when upgrades finish.
-- Implement a tech tree for unlocking new units, upgrades and building tiers.
-  - Introduce a **`TechTree`** class with `IsUnlocked(string id)` and `Unlock(string id)` methods.
-  - `ToolbarHandler` and `Spawner` query `TechTree` to enable or disable buttons.
-- Provide rally points and production queues through `ToolbarHandler`.
-  - Extend buildings with a **`RallyPoint`** property and a `SetRallyPoint(Vector3 position)` function used by `rtsUnit.Spawn`.
-  - Production queues rely on the `ProductionQueue` class from the units section.
-
-### Map and World
-
-- Expand the map generator for varied terrain and resource placement.
-  - Extend `MapGenScript` to generate height maps and random resource areas.
-  - Create a **`ResourceSpawner`** that places `ResourceNode` objects at map initialisation.
-- Add a fog‑of‑war system using `GameEntityTrackerItem` visibility data.
-  - Implement a **`FogOfWar`** manager maintaining a visibility grid for each player.
-  - Units register their `GameEntityTrackerItem` so the fog can be revealed as they explore.
-- Support multiple player start locations from `MapInitScript`.
-  - Add a **`PlayerSpawner`** that creates initial buildings and units at each start position.
-- Optional environmental effects such as day/night cycles.
-  - A simple **`DayNightCycle`** script can rotate the directional light over time.
-
-### AI Opponents
-
-- Computer players that harvest, build and train units.
-  - Add an **`AIController`** script using states such as Gather, Build and Attack.
-  - The AI should use `Spawner`, `ResourceManager` and `ProductionQueue` just like a human player.
-- Basic attack and defense strategies with difficulty settings.
-  - Implement a **`StrategyManager`** deciding when to attack or defend.
-  - Provide an `AIDifficulty` structure that modifies resource rates and reaction times.
-
 ### Interface
 
 - HUD elements for resource counts and selected unit stats.
@@ -101,7 +89,14 @@ The current scripts (`ToolbarHandler`, `rtsUnit`, `rtsBuilding`, `SelectionManag
   - Implement a **`MiniMap`** component that renders the scene with a dedicated camera and accepts `Ping(Vector3 position)` calls.
 - Queue displays for unit production and building construction.
   - A **`QueueUI`** script should display the contents of each building's `ProductionQueue` and construction progress.
+### AI Opponents
 
+- Computer players that harvest, build and train units.
+  - Add an **`AIController`** script using states such as Gather, Build and Attack.
+  - The AI should use `Spawner`, `ResourceManager` and `ProductionQueue` just like a human player.
+- Basic attack and defense strategies with difficulty settings.
+  - Implement a **`StrategyManager`** deciding when to attack or defend.
+  - Provide an `AIDifficulty` structure that modifies resource rates and reaction times.
 ### Miscellaneous
 
 - Save and load functionality.
