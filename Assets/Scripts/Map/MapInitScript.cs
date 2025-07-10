@@ -8,6 +8,9 @@ public class MapInitScript : MonoBehaviour
     public int limitY = 100;
     public GameObject terrainParent;
     public Vector3[] PlayerStartPositions;
+    public ResourceSpawner resourceSpawner;
+    public PlayerSpawner playerSpawner;
+    public SimpleMapGenerator mapGenerator;
 
     // Prefab for the quad (can be set in the Unity Editor)
     public GameObject quadPrefab;
@@ -20,13 +23,33 @@ public class MapInitScript : MonoBehaviour
 
     void Start()
     {
-        // Initialize the map
         InitMap();
         CommonVariables.PlayerCount = PlayerStartPositions.Length;
-        // Calculate the center of the grid
         CalculateGridCenter();
 
-        // Notify subscribers that the map is initialized
+        if (FogOfWar.Instance != null)
+        {
+            FogOfWar.Instance.InitVisibility(limitX, limitY);
+        }
+
+        if (mapGenerator != null)
+        {
+            mapGenerator.width = limitX;
+            mapGenerator.height = limitY;
+            mapGenerator.Generate();
+        }
+
+        if (resourceSpawner != null)
+        {
+            resourceSpawner.mapSize = new Vector2(limitX, limitY);
+            resourceSpawner.SpawnResources();
+        }
+
+        if (playerSpawner != null)
+        {
+            playerSpawner.SpawnPlayers(PlayerStartPositions);
+        }
+
         OnMapInitialized?.Invoke();
     }
 

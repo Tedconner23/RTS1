@@ -5,6 +5,8 @@ public class RTSUnit : GameEntity, RTSISelectable
 {
     private Vector3 m_Position;
     private NavMeshAgent navMeshAgent;
+    private GameEntityTrackerItem tracker;
+    private FogOfWarRevealer revealer;
 
     Vector3 RTSISelectable.Position
     {
@@ -16,13 +18,22 @@ public class RTSUnit : GameEntity, RTSISelectable
         }
     }
 
-    private void Start()
+    private void Awake()
     {
         navMeshAgent = GetComponent<NavMeshAgent>();
         if (navMeshAgent == null)
         {
             Debug.LogError("NavMeshAgent component not found on RTSUnit.");
         }
+
+        tracker = GetComponent<GameEntityTrackerItem>();
+        if (tracker == null)
+            tracker = gameObject.AddComponent<GameEntityTrackerItem>();
+        tracker.OwnedPlayer = unitFaction;
+
+        revealer = GetComponent<FogOfWarRevealer>();
+        if (revealer == null)
+            revealer = gameObject.AddComponent<FogOfWarRevealer>();
     }
 
     public void Select()
