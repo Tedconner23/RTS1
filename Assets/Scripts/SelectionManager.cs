@@ -11,10 +11,12 @@ public class SelectionManager : MonoBehaviour
     private bool isDragging;
 
     private List<RTSISelectable> selectedObjects = new List<RTSISelectable>();
+    private ToolbarHandler toolbar;
 
     void Awake()
     {
         mainCamera = Camera.main;
+        toolbar = FindObjectOfType<ToolbarHandler>();
     }
 
     void Update()
@@ -49,6 +51,10 @@ public class SelectionManager : MonoBehaviour
             obj.Deselect();
         }
         selectedObjects.Clear();
+        if (toolbar != null)
+        {
+            toolbar.OnDeselect();
+        }
 
         // Single click selection
         if (Vector2.Distance(startPos, endPos) < 10f)
@@ -88,6 +94,18 @@ public class SelectionManager : MonoBehaviour
         foreach (var obj in selectedObjects)
         {
             Debug.Log($"{obj} selected.");
+        }
+
+        if (toolbar != null)
+        {
+            if (selectedObjects.Count == 1 && selectedObjects[0] is RTSBuilding building)
+            {
+                toolbar.OnSelect(building);
+            }
+            else
+            {
+                toolbar.OnDeselect();
+            }
         }
     }
 }
